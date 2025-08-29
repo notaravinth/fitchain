@@ -1,171 +1,37 @@
-// import { useCallback, useEffect, useState } from "react";
-// // import { Avatar, Name } from '@coinbase/onchainkit/identity';
-// import {
-//   Transaction,
-//   TransactionButton,
-//   TransactionSponsor,
-//   TransactionStatus,
-//   TransactionStatusAction,
-//   TransactionStatusLabel,
-// } from "@coinbase/onchainkit/transaction";
-// import { LifecycleStatus } from "@coinbase/onchainkit/transaction";
-// // import { Wallet, ConnectWallet } from '@coinbase/onchainkit/wallet";
-// import {
-//   ConnectWallet,
-//   Wallet,
-//   WalletDropdown,
-//   WalletDropdownDisconnect,
-// } from "@coinbase/onchainkit/wallet";
-// import {
-//   Address,
-//   Avatar,
-//   Name,
-//   Identity,
-//   Badge,
-// } from "@coinbase/onchainkit/identity";
-// import { color } from "@coinbase/onchainkit/theme";
-// // import { useEffect, useState } from "react";
+"use client";
 
-// import { getAddress } from "@coinbase/onchainkit/identity";
+import { useStacks } from "../../lib/hooks/useStacks";
 
-// export default function WalletComponents() {
-//     // const [addressDetail, setAddress] = useState(null);
-//     // useEffect(() => {
-//     //   const getAddressDetails = async () => {
-//     //     const address = await getAddress({ name: "sahasvivek001.cb.id" });
-//     //     console.log("Address details:", address);
-//     //     setAddress(addressDetail);
-//     //   };
-//     //   getAddressDetails();
-  
-//     // }, []);
-  
-//     return (
-//       <div className="flex justify-end">
-//         <Wallet>
-//           <ConnectWallet>
-//             <Avatar className="h-6 w-6" />
-//             <Name />
-//           </ConnectWallet>
-//           <WalletDropdown>
-//             <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-//               <Avatar />
-//               <Name address="0xB14a7659486Af4ad46c598b404c259E895Da41e2"/>
-//             <Address address="0xB14a7659486Af4ad46c598b404c259E895Da41e2" className={color.foregroundMuted} />
-//             </Identity>
-//             <WalletDropdownDisconnect />
-//           </WalletDropdown>
-//         </Wallet>
-//       </div>
-//     );
-//   }
-
-
-
-
-// "use client";
-// import { useEffect, useState } from "react";
-// import {
-//   Transaction,
-//   TransactionButton,
-//   TransactionSponsor,
-//   TransactionStatus,
-//   TransactionStatusAction,
-//   TransactionStatusLabel,
-//   LifecycleStatus,
-// } from "@coinbase/onchainkit/transaction";
-// import {
-//   ConnectWallet,
-//   Wallet,
-//   WalletDropdown,
-//   WalletDropdownDisconnect,
-// } from "@coinbase/onchainkit/wallet";
-// import {
-//   Address,
-//   Avatar,
-//   Name,
-//   Identity,
-//   Badge,
-// } from "@coinbase/onchainkit/identity";
-// import { color } from "@coinbase/onchainkit/theme";
-// import { getAddress } from "@coinbase/onchainkit/identity";
-
-// export default function WalletComponents() {
-
-//   return (
-//     <div className="flex justify-end">
-//       <Wallet>
-//         <ConnectWallet>
-//           <Avatar className="h-6 w-6" />
-//           <Name />
-//         </ConnectWallet>
-//         <WalletDropdown>
-//           <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick>
-//             <Avatar />
-//             <Name address="0xB14a7659486Af4ad46c598b404c259E895Da41e2" />
-//             <Address
-//               address="0xB14a7659486Af4ad46c598b404c259E895Da41e2"
-//               className={color.foregroundMuted}
-//             />
-//           </Identity>
-//           <WalletDropdownDisconnect />
-//         </WalletDropdown>
-//       </Wallet>
-//     </div>
-//   );
-// }
-
-
-
-
-'use client';
-import {
-  Address,
-  Avatar,
-  EthBalance,
-  Identity,
-  Name,
-} from '@coinbase/onchainkit/identity';
-import {
-  ConnectWallet,
-  Wallet,
-  WalletDropdown,
-  WalletDropdownBasename,
-  WalletDropdownDisconnect,
-  WalletDropdownFundLink,
-  WalletDropdownLink,
-} from '@coinbase/onchainkit/wallet';
-
-type WalletWrapperParams = {
-  text?: string;
-  className?: string;
-  withWalletAggregator?: boolean;
-};
 export default function Login() {
+  const { userData, authenticate, signOut } = useStacks();
+
   return (
-    <>
-      <Wallet>
-        <ConnectWallet
+    <div className="flex justify-end p-4">
+      {!userData ? (
+        <button
+          onClick={authenticate}
+          className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
         >
-          <Avatar className="h-6 w-6" />
-          <Name />
-        </ConnectWallet>
-        <WalletDropdown>
-          <Identity className="px-4 pt-3 pb-2" hasCopyAddressOnClick={true}>
-            <Avatar />
-            <Name />
-            <Address />
-            <EthBalance />
-          </Identity>
-          <WalletDropdownBasename />
-          <WalletDropdownLink icon="wallet" href="https://wallet.coinbase.com">
-            Go to Wallet Dashboard
-          </WalletDropdownLink>
-          <WalletDropdownFundLink />
-          <WalletDropdownDisconnect />
-        </WalletDropdown>
-      </Wallet>
-    </>
+          Connect Wallet
+        </button>
+      ) : (
+        <div className="flex items-center gap-4">
+          <div className="flex flex-col text-sm">
+            <span className="font-medium">
+              {userData.profile?.name || "Stacks User"}
+            </span>
+            <span className="text-xs text-gray-500">
+              {userData.profile?.stxAddress?.testnet}
+            </span>
+          </div>
+          <button
+            onClick={signOut}
+            className="px-3 py-1 text-sm text-gray-600 hover:text-gray-800"
+          >
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
-

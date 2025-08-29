@@ -1,0 +1,32 @@
+---
+id: 0
+name: Testnet deployment
+network: testnet
+stacks-node: "https://api.testnet.hiro.so"
+bitcoin-node: "http://blockstack:blockstacksystem@bitcoind.testnet.stacks.co:18332"
+plan:
+  batches:
+    - id: 0
+      transactions:
+        - contract-publish:
+            contract-name: sip-010-trait
+            expected-sender: ST2MH6J79AVRMTK99RWTFCCFZE5YZP175TZD8JGV0
+            cost: 9000
+            path: "contracts\\sip-010-trait.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: escrow
+            expected-sender: ST2MH6J79AVRMTK99RWTFCCFZE5YZP175TZD8JGV0
+            cost: 46920
+            path: "contracts\\escrow.clar"
+            anchor-block-only: true
+            clarity-version: 3
+        - contract-publish:
+            contract-name: platform-token
+            expected-sender: ST2MH6J79AVRMTK99RWTFCCFZE5YZP175TZD8JGV0
+            cost: 10240
+            path: "contracts\\platform-token.clar"
+            anchor-block-only: true
+            clarity-version: 3
+      epoch: "3.2"

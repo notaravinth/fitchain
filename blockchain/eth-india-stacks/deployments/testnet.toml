@@ -1,0 +1,23 @@
+[network]
+name = "testnet"
+deployment_fee_rate = 10
+
+[accounts.deployer]
+mnemonic = "mutual liberty village wagon inmate auction twist river rebuild giraffe book obscure unique ostrich boring possible noise cost eight void fall news gain final"
+balance = 100_000_000_000_000
+address = "ST2MH6J79AVRMTK99RWTFCCFZE5YZP175TZD8JGV0"
+
+[contracts.sip-010-trait]
+path = "contracts/sip-010-trait.clar"
+clarity_version = 3
+epoch = "3.2"
+
+[contracts.platform-token]
+path = "contracts/platform-token.clar"
+clarity_version = 3
+epoch = "3.2"
+
+[contracts.escrow]
+path = "contracts/escrow.clar"
+clarity_version = 3
+epoch = "3.2"

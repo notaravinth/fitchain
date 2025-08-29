@@ -1,18 +1,6 @@
-import React, { useState, useEffect, useCallback } from "react";
-import {
-  Transaction,
-  TransactionButton,
-  TransactionSponsor,
-  TransactionStatus,
-  TransactionStatusAction,
-  TransactionStatusLabel,
-} from "@coinbase/onchainkit/transaction";
-import {
-  BASE_SEPOLIA_CHAIN_ID,
-  escrowCalls,
-  generateNextChallengeId,
-} from "./../../../blockchain/main";
+import React, { useState } from "react";
 import axios from "axios";
+import { useContract } from "../../../lib/hooks/useContract";
 
 interface ModalChallengeProps {
   open: boolean;
@@ -62,15 +50,13 @@ const ModalChallenge: React.FC<ModalChallengeProps> = ({
 
   const handleFormSubmit = async () => {
     try {
-      const id = await generateNextChallengeId();
-      const newId = id - 1;
       const challengeData = {
         category,
         challengeName,
         target,
         targetType,
         challengeType,
-        id: newId.toString(),
+        id: Math.floor(Math.random() * 1000).toString(),
         amount,
       };
 
@@ -92,27 +78,7 @@ const ModalChallenge: React.FC<ModalChallengeProps> = ({
     }
   };
 
-  const handleOnStatus = useCallback(
-    (status: any) => {
-      console.log("LifecycleStatus", status);
-      if (status.statusName === "success") {
-        // Create a promise to ensure state is current
-        Promise.resolve().then(() => {
-          // Log the current state values to verify
-          console.log("Current state values:", {
-            category,
-            challengeName,
-            target,
-            targetType,
-            challengeType,
-            amount,
-          });
-          handleFormSubmit();
-        });
-      }
-    },
-    [category, challengeName, target, targetType, challengeType, amount]
-  ); // Include all state variables in dependencies
+  const { createP2PChallenge, loading, error } = useContract();
 
   if (!open) return null;
 
@@ -238,21 +204,30 @@ const ModalChallenge: React.FC<ModalChallengeProps> = ({
               </div>
             </div>
 
-            
-
-            <Transaction
-              chainId={BASE_SEPOLIA_CHAIN_ID}
-              calls={escrowCalls.createP2PChallenge(amount)}
-              onStatus={handleOnStatus}
-              className="bg-blue-700 text-white"
+            <button
+              onClick={async () => {
+                try {
+                  const stake = parseFloat(amount);
+                  if (isNaN(stake)) {
+                    throw new Error("Invalid amount");
+                  }
+                  await createP2PChallenge(stake, handleFormSubmit);
+                } catch (err) {
+                  console.error("Error creating P2P challenge:", err);
+                }
+              }}
+              className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 disabled:bg-blue-300 disabled:cursor-not-allowed mb-4"
+              disabled={
+                loading ||
+                !amount ||
+                !challengeName ||
+                !target ||
+                !challengeType
+              }
             >
-              <TransactionButton />
-              <TransactionSponsor />
-              <TransactionStatus>
-                <TransactionStatusLabel />
-                <TransactionStatusAction />
-              </TransactionStatus>
-            </Transaction>
+              {loading ? "Creating Challenge..." : "Create Challenge"}
+            </button>
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
           </>
         )}
 

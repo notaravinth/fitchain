@@ -1,16 +1,49 @@
-'use client';
- 
-import type { ReactNode } from 'react';
-import { OnchainKitProvider } from '@coinbase/onchainkit';
-import { base } from 'wagmi/chains'; // add baseSepolia for testing
- 
-export function Providers(props: { children: ReactNode }) {
+"use client";
+
+import { ReactNode, useState, useEffect } from "react";
+import { AppConfig, UserSession, showConnect } from "@stacks/connect";
+import { StacksContext } from "../lib/context/StacksContext";
+
+const appConfig = new AppConfig(["store_write", "publish_data"]);
+const userSession = new UserSession({ appConfig });
+
+export function Providers({ children }: { children: ReactNode }) {
+  const [userData, setUserData] = useState<any>(null);
+
+  useEffect(() => {
+    if (userSession.isSignInPending()) {
+      userSession.handlePendingSignIn().then((userData) => {
+        setUserData(userData);
+      });
+    } else if (userSession.isUserSignedIn()) {
+      setUserData(userSession.loadUserData());
+    }
+  }, []);
+
+  const authenticate = () => {
+    showConnect({
+      appDetails: {
+        name: "XFIT Challenge",
+        icon: window.location.origin + "/favicon.ico",
+      },
+      redirectTo: "/",
+      onFinish: () => {
+        window.location.reload();
+      },
+      userSession,
+    });
+  };
+
+  const signOut = () => {
+    userSession.signUserOut("/");
+    setUserData(null);
+  };
+
   return (
-    <OnchainKitProvider
-      apiKey="gDSdYE96v4KoRgypfLPf2Okh4YOY4Jh3"
-      chain={base}
+    <StacksContext.Provider
+      value={{ userSession, userData, authenticate, signOut }}
     >
-      {props.children}
-    </OnchainKitProvider>
+      {children}
+    </StacksContext.Provider>
   );
 }
