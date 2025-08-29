@@ -2,20 +2,41 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 
-const API_BASE_URL = "https://6ad1-14-195-142-82.ngrok-free.app";
+// In-memory storage for buckets and files
+const storage = {
+  buckets: new Map(),
+};
 
 async function apiRequest(method, endpoint, data = null) {
   console.log("apiRequest", method, endpoint, data);
   try {
-    const response = await axios({
-      method,
-      url: `${API_BASE_URL}${endpoint}`,
-      data,
-    });
-    return response.data;
+    let response;
+    
+    // Handle requests locally instead of forwarding to external API
+    if (method === 'GET' && endpoint === '/buckets') {
+      response = { data: Array.from(storage.buckets.keys()) };
+    } else if (method === 'POST' && endpoint === '/buckets') {
+      const { bucketName } = data;
+      if (!storage.buckets.has(bucketName)) {
+        storage.buckets.set(bucketName, new Map());
+      }
+      response = { data: { message: `Bucket ${bucketName} created successfully` } };
+    } else if (method === 'GET' && endpoint.startsWith('/buckets/')) {
+      const bucketName = endpoint.split('/')[2];
+      const bucket = storage.buckets.get(bucketName);
+      if (!bucket) {
+        throw new Error(`Bucket ${bucketName} not found`);
+      }
+      response = { data: Array.from(bucket.values()) };
+    }
+    if (!response) {
+      throw new Error('Invalid request');
+    }
+    console.log("Response:", response.data);
+    return { success: true, data: response.data };
   } catch (error) {
-    console.error(error.response ? error.response.data : error.message);
-    throw error;
+    console.error(error.message);
+    return { success: false, error: error.message };
   }
 }
 

@@ -1,9 +1,9 @@
-import { uintCV } from '@stacks/transactions';
-import { openContractCall } from '@stacks/connect';
-import { network, contractAddress, contractNames } from '../config/stacks';
+import { uintCV, standardPrincipalCV } from '@stacks/transactions';
+import { FinishedTxData, openContractCall } from '@stacks/connect';
+import { network, contractAddress, contractNames, appConfig } from '../config/stacks';
 
 interface ContractCallOptions {
-  onFinish?: (data: any) => void;
+  onFinish?: (data: FinishedTxData) => void;
   onCancel?: () => void;
 }
 
@@ -15,16 +15,29 @@ const makeContractCall = async (
   functionArgs: any[],
   options?: ContractCallOptions
 ) => {
-  await openContractCall({
-    contractAddress,
-    contractName: contractNames.escrow,
-    functionName,
-    functionArgs,
-    network,
-    onFinish: options?.onFinish,
-    onCancel: options?.onCancel,
-    postConditionMode: 0x01,
-  });
+  try {
+    await openContractCall({
+      network,
+      anchorMode: 1, // This means the transaction will be anchored only once
+      contractAddress,
+      contractName: contractNames.escrow,
+      functionName,
+      functionArgs,
+      onFinish: (data) => {
+        console.log('Transaction finished:', data);
+        options?.onFinish?.(data);
+      },
+      onCancel: () => {
+        console.log('Transaction cancelled');
+        options?.onCancel?.();
+      },
+      appDetails: appConfig,
+      postConditionMode: 1, // Allow post conditions
+    });
+  } catch (error) {
+    console.error('Error making contract call:', error);
+    throw error;
+  }
 };
 
 export const contractCalls = {

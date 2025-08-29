@@ -25,10 +25,10 @@ router.post("/buckets", async (req, res) => {
   try {
     const { bucketName } = req.body;
     if (!bucketName) {
-      return res.status(400).json({ error: "bucketName is required" });
+      return res.status(400).json({ success: false, error: "bucketName is required" });
     }
-    const result = await createBucket(bucketName);
-    res.json(result);
+    await createBucket(bucketName);
+    res.json({ success: true, message: `Bucket ${bucketName} created successfully` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

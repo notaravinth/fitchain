@@ -1,18 +1,18 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useStacks } from './useStacks';
-import { contractCalls } from '../stacks-contract-calls';
+import { contractCalls } from '../contracts';
 
 export function useContract() {
   const { userSession } = useStacks();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleContractCall = async (
+  const handleContractCall = useCallback(async (
     call: (options?: { onFinish?: (data: any) => void; onCancel?: () => void }) => Promise<void>,
     onSuccess?: () => void
   ) => {
     if (!userSession.isUserSignedIn()) {
-      setError('Please sign in first');
+      setError('Please connect your Leather wallet first');
       return;
     }
 
@@ -22,19 +22,22 @@ export function useContract() {
     try {
       await call({
         onFinish: (data) => {
+          console.log('Transaction successful:', data);
           setLoading(false);
           if (onSuccess) onSuccess();
         },
         onCancel: () => {
+          console.log('Transaction cancelled by user');
           setLoading(false);
           setError('Transaction cancelled');
         },
       });
     } catch (err: any) {
+      console.error('Contract call error:', err);
       setLoading(false);
       setError(err.message || 'An error occurred');
     }
-  };
+  }, [userSession]);
 
   const createP2PChallenge = async (stake: number, onSuccess?: () => void) => {
     await handleContractCall((options) => contractCalls.createP2PChallenge(stake, options), onSuccess);
